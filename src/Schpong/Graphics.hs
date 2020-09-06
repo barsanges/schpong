@@ -31,10 +31,11 @@ windowDisplay = InWindow "Schpong" (windowWidth, windowHeight) (10, 10)
 
 -- | Turn a frame into a Gloss picture.
 drawFrame :: Frame -> Picture
-drawFrame (Frame walls balls) = pictures (pwalls ++ pballs)
+drawFrame (Frame walls balls char) = pictures (pchar:(pwalls ++ pballs))
   where
     pwalls = fmap drawWall walls
     pballs = fmap drawBall balls
+    pchar = drawCharacter char
 
 -- | Turn a ball into a Gloss picture.
 drawBall :: Ball -> Picture
@@ -49,10 +50,17 @@ drawWall (Wall (x0, y0) (x1, y1)) = translate x y (rectangleSolid width height)
     x = (x0 + x1) / 2
     y = (y0 + y1) / 2
 
+-- | Turn the character into a Gloss picture.
+drawCharacter :: Float -> Picture
+drawCharacter x = translate x y (Color (greyN 0.5) (rectangleSolid width height))
+  where
+    (width, height) = characterSize
+    y = 10 - 0.5 * (fromIntegral windowHeight)
+
 -- | Handle input events (e.g.: key press).
 handle :: Event -> Frame -> Frame
 handle _ x = x
 
 -- | Update a frame.
 update :: Float -> Frame -> Frame
-update dt (Frame walls balls) = Frame walls (fmap (move dt walls) balls)
+update dt (Frame walls balls x) = Frame walls (fmap (move dt walls) balls) x

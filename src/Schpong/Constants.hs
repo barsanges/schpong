@@ -7,6 +7,7 @@ Constants used within the game.
 -}
 
 module Schpong.Constants (
+  characterSize,
   eps,
   g,
   stepsPerSecond,
@@ -15,6 +16,10 @@ module Schpong.Constants (
   xspeed,
   yBounceSpeed
   ) where
+
+-- | Size of the character.
+characterSize :: (Float, Float)
+characterSize = (10, 30)
 
 -- | Speed of a ball on the x axis (= distance for one second).
 xspeed :: Float

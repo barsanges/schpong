@@ -33,12 +33,12 @@ data Contact = Bottom
   deriving (Show)
 
 -- | State of the game for a given moment.
-data Frame = Frame [Wall] [Ball]
+data Frame = Frame [Wall] [Ball] Float
   deriving (Show)
 
 -- | Initial state of the game.
 initFrame :: Frame
-initFrame = Frame [bottom, right, up, left] [ball]
+initFrame = Frame [bottom, right, up, left] [ball] 0
   where
     halfWidth = 0.5 * (fromIntegral windowWidth)
     halfHeight = 0.5 * (fromIntegral windowHeight)
