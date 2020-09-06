@@ -1,0 +1,26 @@
+name:                schpong
+version:             0.1.0
+license:             NPOSL-3.0
+author:              barsanges
+maintainer:          https://github.com/barsanges
+copyright:           2020 barsanges
+
+extra-source-files:
+- README.md
+
+synopsis:            A simple arcade game using boucing balls
+description:         Please see the README
+
+dependencies:
+- base
+- gloss
+
+library:
+  source-dirs: src
+
+executables:
+  schpong:
+    main:             Main.hs
+    source-dirs:      app
+    dependencies:
+    - schpong
