@@ -8,7 +8,9 @@ Constants used within the game.
 
 module Schpong.Constants (
   characterSize,
+  characterSpeed,
   eps,
+  floorLevel,
   g,
   stepsPerSecond,
   windowHeight,
@@ -20,6 +22,10 @@ module Schpong.Constants (
 -- | Size of the character.
 characterSize :: (Float, Float)
 characterSize = (10, 30)
+
+-- | Speed of the character on the x axis.
+characterSpeed :: Float
+characterSpeed = 2 * xspeed
 
 -- | Speed of a ball on the x axis (= distance for one second).
 xspeed :: Float
@@ -49,3 +55,7 @@ windowHeight = 600
 -- | Width of the game window.
 windowWidth :: Int
 windowWidth = 800
+
+-- | Ordinate of the floor on which the character is walking.
+floorLevel :: Float
+floorLevel = 10 - 0.5 * (fromIntegral windowHeight)

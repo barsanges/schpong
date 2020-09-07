@@ -8,10 +8,13 @@ Mechanics and rules of the game.
 
 module Schpong.Gameplay (
   Ball(..),
+  Character(..),
   Frame(..),
+  Movement(..),
   Wall(..),
   initFrame,
-  move
+  move,
+  walk
   ) where
 
 import Schpong.Constants
@@ -32,13 +35,21 @@ data Contact = Bottom
              | None
   deriving (Show)
 
+data Movement = ToLeft
+              | ToRight
+              | Still
+  deriving (Show)
+
+data Character = Character Float Movement
+  deriving (Show)
+
 -- | State of the game for a given moment.
-data Frame = Frame [Wall] [Ball] Float
+data Frame = Frame [Wall] [Ball] Character
   deriving (Show)
 
 -- | Initial state of the game.
 initFrame :: Frame
-initFrame = Frame [bottom, right, up, left] [ball] 0
+initFrame = Frame [bottom, right, up, left] [ball] char
   where
     halfWidth = 0.5 * (fromIntegral windowWidth)
     halfHeight = 0.5 * (fromIntegral windowHeight)
@@ -47,6 +58,7 @@ initFrame = Frame [bottom, right, up, left] [ball] 0
     up = Wall (-halfWidth, halfHeight - 10) (halfWidth, halfHeight)
     left = Wall (-halfWidth, -halfHeight) (-halfWidth + 10, halfHeight)
     ball = Ball 10 (0, 0) (xspeed, 0)
+    char = Character 0 Still
 
 -- | Move a ball (going up and down, and boucing against walls).
 move :: Float -> [Wall] -> Ball -> Ball
@@ -80,3 +92,46 @@ getContact (Ball r (x, y) _) (Wall (x0, y0) (x1, y1))
   | x - r <= x0 && x0 <= x + r && y0 <= y && y <= y1 = RightSide
   | x - r <= x1 && x1 <= x + r && y0 <= y && y <= y1 = LeftSide
   | otherwise = None
+
+-- | Let the character walk on the floor, from left to right or from right to
+-- left.
+walk :: Float -> [Wall] -> Character -> Character
+walk dt walls (Character x movmt) = case movmt of
+  Still -> Character x movmt
+  ToLeft -> Character (walk' x (x - dt * characterSpeed) walls) movmt
+  ToRight -> Character (walk' x (x + dt * characterSpeed) walls) movmt
+
+-- | Move the character between two points on the floor.
+walk' :: Float -> Float -> [Wall] -> Float
+walk' xa xb walls = if xa < xb'
+                    then minimum collisions
+                    else maximum collisions
+  where
+    xb' = walkWhileFloor xa xb walls
+    collisions = fmap (collision xa xb') walls
+
+-- | Move the character between two points, provided there is a floor.
+walkWhileFloor :: Float -> Float -> [Wall] -> Float
+walkWhileFloor xa xb walls = comp xb (foldr go xa walls')
+ where
+   isFloor (Wall _ (_, y)) = abs (y - floorLevel) < (1e-9)
+   walls' = filter isFloor walls
+   (comp, choose) = if xa < xb
+                    then (min, max)
+                    else (max, min)
+   go :: Wall -> Float -> Float
+   go (Wall (x0, _) (x1, _)) x = if x0 <= x && x <= x1
+                                 then choose x0 x1
+                                 else x
+
+-- | Move the character between two points, provided the given wall does not
+-- stand in the way.
+collision :: Float -> Float -> Wall -> Float
+collision xa xb (Wall (x0, y0) (x1, y1))
+  | y0 > floorLevel + height || y1 <= floorLevel || sideTest = xb
+  | otherwise = xa
+  where
+    sideTest = if xa < xb
+               then (xb + 0.5 * width < x0) || x1 <= xa
+               else (xb - 0.5 * width > x1) || x0 >= xa
+    (width, height) = characterSize

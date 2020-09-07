@@ -51,16 +51,25 @@ drawWall (Wall (x0, y0) (x1, y1)) = translate x y (rectangleSolid width height)
     y = (y0 + y1) / 2
 
 -- | Turn the character into a Gloss picture.
-drawCharacter :: Float -> Picture
-drawCharacter x = translate x y (Color (greyN 0.5) (rectangleSolid width height))
+drawCharacter :: Character -> Picture
+drawCharacter (Character x _) =
+  translate x y (Color (greyN 0.5) (rectangleSolid width height))
   where
     (width, height) = characterSize
     y = 10 - 0.5 * (fromIntegral windowHeight)
 
 -- | Handle input events (e.g.: key press).
 handle :: Event -> Frame -> Frame
-handle _ x = x
+handle (EventKey (SpecialKey KeyLeft) Down _ _)  (Frame walls balls (Character x _)) =
+  Frame walls balls (Character x ToLeft)
+handle (EventKey (SpecialKey KeyLeft) Up _ _)  (Frame walls balls (Character x _)) =
+  Frame walls balls (Character x Still)
+handle (EventKey (SpecialKey KeyRight) Down _ _)  (Frame walls balls (Character x _)) =
+  Frame walls balls (Character x ToRight)
+handle (EventKey (SpecialKey KeyRight) Up _ _)  (Frame walls balls (Character x _)) =
+  Frame walls balls (Character x Still)
+handle _ f = f
 
 -- | Update a frame.
 update :: Float -> Frame -> Frame
-update dt (Frame walls balls x) = Frame walls (fmap (move dt walls) balls) x
+update dt (Frame walls balls x) = Frame walls (fmap (move dt walls) balls) (walk dt walls x)
