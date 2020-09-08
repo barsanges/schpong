@@ -56,7 +56,7 @@ drawCharacter (Character x _) =
   translate x y (Color (greyN 0.5) (rectangleSolid width height))
   where
     (width, height) = characterSize
-    y = 10 - 0.5 * (fromIntegral windowHeight)
+    y = 10 - 0.5 * (fromIntegral windowHeight) + 0.5 * height
 
 -- | Handle input events (e.g.: key press).
 handle :: Event -> Frame -> Frame
