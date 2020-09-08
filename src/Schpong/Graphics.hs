@@ -46,11 +46,12 @@ drawGameOver p = Pictures [ Translate (-175) 100 $ Text "Game"
 
 -- | Turn a frame into a Gloss picture.
 drawFrame :: Frame -> Picture
-drawFrame (Frame walls balls char) = pictures (pchar:(pwalls ++ pballs))
+drawFrame (Frame walls balls char rope) = pictures (prope:pchar:(pwalls ++ pballs))
   where
     pwalls = fmap drawWall walls
     pballs = fmap drawBall balls
     pchar = drawCharacter char
+    prope = drawRope rope
 
 -- | Turn a ball into a Gloss picture.
 drawBall :: Ball -> Picture
@@ -73,26 +74,37 @@ drawCharacter (Character x _) =
     (width, height) = characterSize
     y = 10 - 0.5 * (fromIntegral windowHeight) + 0.5 * height
 
+-- | Turn the rope into a Gloss picture.
+drawRope :: Maybe Point -> Picture
+drawRope Nothing = Blank
+drawRope (Just (x, h)) = translate x y (Color (greyN 0.8) (rectangleSolid ropeWidth height))
+  where
+    y = (h + floorLevel) / 2
+    height = h - floorLevel
+
 -- | Handle input events (e.g.: key press).
 handle :: Event -> GameState -> GameState
 handle _ (GameOver f) = GameOver f
-handle (EventKey (SpecialKey KeyLeft) Down _ _)  (Playing (Frame walls balls (Character x _))) =
-  Playing $ Frame walls balls (Character x ToLeft)
-handle (EventKey (SpecialKey KeyLeft) Up _ _)  (Playing (Frame walls balls (Character x _))) =
-  Playing $ Frame walls balls (Character x Still)
-handle (EventKey (SpecialKey KeyRight) Down _ _)  (Playing (Frame walls balls (Character x _))) =
-  Playing $ Frame walls balls (Character x ToRight)
-handle (EventKey (SpecialKey KeyRight) Up _ _)  (Playing (Frame walls balls (Character x _))) =
-  Playing $ Frame walls balls (Character x Still)
+handle (EventKey (SpecialKey KeySpace) Down _ _)  (Playing (Frame walls balls (Character x dir) _)) =
+  Playing $ Frame walls balls (Character x dir) (Just (x, floorLevel))
+handle (EventKey (SpecialKey KeyLeft) Down _ _)  (Playing (Frame walls balls (Character x _) rope)) =
+  Playing $ Frame walls balls (Character x ToLeft) rope
+handle (EventKey (SpecialKey KeyLeft) Up _ _)  (Playing (Frame walls balls (Character x _) rope)) =
+  Playing $ Frame walls balls (Character x Still) rope
+handle (EventKey (SpecialKey KeyRight) Down _ _)  (Playing (Frame walls balls (Character x _) rope)) =
+  Playing $ Frame walls balls (Character x ToRight) rope
+handle (EventKey (SpecialKey KeyRight) Up _ _)  (Playing (Frame walls balls (Character x _) rope)) =
+  Playing $ Frame walls balls (Character x Still) rope
 handle _ (Playing f) = Playing f
 
 -- | Update a frame.
 update :: Float -> GameState -> GameState
 update _ (GameOver f) = GameOver f
-update dt (Playing (Frame walls balls x)) = case hit x' balls' of
+update dt (Playing (Frame walls balls x rope)) = case hit x' balls' of
   True -> GameOver f'
   False -> Playing f'
   where
     x' = walk dt walls x
     balls' = fmap (move dt walls) balls
-    f' = Frame walls balls' x'
+    rope' = throw dt rope
+    f' = Frame walls balls' x' rope'

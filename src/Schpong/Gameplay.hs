@@ -15,6 +15,7 @@ module Schpong.Gameplay (
   initFrame,
   hit,
   move,
+  throw,
   walk
   ) where
 
@@ -45,12 +46,12 @@ data Character = Character Float Movement
   deriving (Show)
 
 -- | State of the game for a given moment.
-data Frame = Frame [Wall] [Ball] Character
+data Frame = Frame [Wall] [Ball] Character (Maybe Point)
   deriving (Show)
 
 -- | Initial state of the game.
 initFrame :: Frame
-initFrame = Frame [bottom, right, up, left] [ball] char
+initFrame = Frame [bottom, right, up, left] [ball] char Nothing
   where
     halfWidth = 0.5 * (fromIntegral windowWidth)
     halfHeight = 0.5 * (fromIntegral windowHeight)
@@ -148,3 +149,12 @@ hit (Character x0 _) = any go
         top = abs (x0 - x) < 0.5 * width && y - r < floorLevel + height
         leftCorner = sqrt ((x0 - 0.5 * width - x)**2 + (y - floorLevel - height)**2) < r
         rightCorner = sqrt ((x0 + 0.5 * width - x)**2 + (y - floorLevel - height)**2) < r
+
+-- | Throw the character's rope in the air.
+throw :: Float -> Maybe Point -> Maybe Point
+throw _ Nothing = Nothing
+throw dt (Just (x, y)) = if y' < - floorLevel
+                         then Just (x, y')
+                         else Nothing
+  where
+    y' = y + dt * ropeSpeed

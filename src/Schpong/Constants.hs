@@ -12,12 +12,22 @@ module Schpong.Constants (
   eps,
   floorLevel,
   g,
+  ropeSpeed,
+  ropeWidth,
   stepsPerSecond,
   windowHeight,
   windowWidth,
   xspeed,
   yBounceSpeed
   ) where
+
+-- | Width of the rope.
+ropeWidth :: Float
+ropeWidth = 2
+
+-- | Speed of the rope on the y axis.
+ropeSpeed :: Float
+ropeSpeed = 2 * yBounceSpeed
 
 -- | Size of the character.
 characterSize :: (Float, Float)
