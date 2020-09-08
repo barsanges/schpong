@@ -69,7 +69,7 @@ drawWall (Wall (x0, y0) (x1, y1)) = translate x y (rectangleSolid width height)
 -- | Turn the character into a Gloss picture.
 drawCharacter :: Character -> Picture
 drawCharacter (Character x _) =
-  translate x y (Color (greyN 0.5) (rectangleSolid width height))
+  translate x y (Color (greyN 0.4) (rectangleSolid width height))
   where
     (width, height) = characterSize
     y = 10 - 0.5 * (fromIntegral windowHeight) + 0.5 * height
@@ -77,7 +77,7 @@ drawCharacter (Character x _) =
 -- | Turn the rope into a Gloss picture.
 drawRope :: Maybe Point -> Picture
 drawRope Nothing = Blank
-drawRope (Just (x, h)) = translate x y (Color (greyN 0.8) (rectangleSolid ropeWidth height))
+drawRope (Just (x, h)) = translate x y (Color (greyN 0.2) (rectangleSolid ropeWidth height))
   where
     y = (h + floorLevel) / 2
     height = h - floorLevel
