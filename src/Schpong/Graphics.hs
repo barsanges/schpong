@@ -14,20 +14,35 @@ import Graphics.Gloss.Interface.Pure.Game
 import Schpong.Constants
 import Schpong.Gameplay
 
+-- | The state of the game.
+data GameState = Playing Frame
+               | GameOver Frame
+
 -- | Run a game of Schpong.
 runGame :: IO ()
 runGame = play
   windowDisplay
   white
   stepsPerSecond
-  initFrame
-  drawFrame
+  (Playing initFrame)
+  drawGameState
   handle
   update
 
 -- | Create a new window for the game.
 windowDisplay :: Display
 windowDisplay = InWindow "Schpong" (windowWidth, windowHeight) (10, 10)
+
+-- | Turn a game state into a Gloss picture.
+drawGameState :: GameState -> Picture
+drawGameState (Playing frame) = drawFrame frame
+drawGameState (GameOver frame) = drawGameOver $ drawFrame frame
+
+-- | Add a "Game over" text to a picture.
+drawGameOver :: Picture -> Picture
+drawGameOver p = Pictures [ Translate (-175) 100 $ Text "Game"
+                          , Translate (-125) (-100) $ Text "Over"
+                          , p ]
 
 -- | Turn a frame into a Gloss picture.
 drawFrame :: Frame -> Picture
@@ -59,17 +74,25 @@ drawCharacter (Character x _) =
     y = 10 - 0.5 * (fromIntegral windowHeight) + 0.5 * height
 
 -- | Handle input events (e.g.: key press).
-handle :: Event -> Frame -> Frame
-handle (EventKey (SpecialKey KeyLeft) Down _ _)  (Frame walls balls (Character x _)) =
-  Frame walls balls (Character x ToLeft)
-handle (EventKey (SpecialKey KeyLeft) Up _ _)  (Frame walls balls (Character x _)) =
-  Frame walls balls (Character x Still)
-handle (EventKey (SpecialKey KeyRight) Down _ _)  (Frame walls balls (Character x _)) =
-  Frame walls balls (Character x ToRight)
-handle (EventKey (SpecialKey KeyRight) Up _ _)  (Frame walls balls (Character x _)) =
-  Frame walls balls (Character x Still)
-handle _ f = f
+handle :: Event -> GameState -> GameState
+handle _ (GameOver f) = GameOver f
+handle (EventKey (SpecialKey KeyLeft) Down _ _)  (Playing (Frame walls balls (Character x _))) =
+  Playing $ Frame walls balls (Character x ToLeft)
+handle (EventKey (SpecialKey KeyLeft) Up _ _)  (Playing (Frame walls balls (Character x _))) =
+  Playing $ Frame walls balls (Character x Still)
+handle (EventKey (SpecialKey KeyRight) Down _ _)  (Playing (Frame walls balls (Character x _))) =
+  Playing $ Frame walls balls (Character x ToRight)
+handle (EventKey (SpecialKey KeyRight) Up _ _)  (Playing (Frame walls balls (Character x _))) =
+  Playing $ Frame walls balls (Character x Still)
+handle _ (Playing f) = Playing f
 
 -- | Update a frame.
-update :: Float -> Frame -> Frame
-update dt (Frame walls balls x) = Frame walls (fmap (move dt walls) balls) (walk dt walls x)
+update :: Float -> GameState -> GameState
+update _ (GameOver f) = GameOver f
+update dt (Playing (Frame walls balls x)) = case hit x' balls' of
+  True -> GameOver f'
+  False -> Playing f'
+  where
+    x' = walk dt walls x
+    balls' = fmap (move dt walls) balls
+    f' = Frame walls balls' x'

@@ -13,6 +13,7 @@ module Schpong.Gameplay (
   Movement(..),
   Wall(..),
   initFrame,
+  hit,
   move,
   walk
   ) where
@@ -135,3 +136,15 @@ collision xa xb (Wall (x0, y0) (x1, y1))
                then (xb + 0.5 * width < x0) || x1 <= xa
                else (xb - 0.5 * width > x1) || x0 >= xa
     (width, height) = characterSize
+
+-- | Detect if a ball is hitting the character.
+hit :: Character -> [Ball] -> Bool
+hit (Character x0 _) = any go
+  where
+    (width, height) = characterSize
+    go (Ball r (x, y) _) = side || top || leftCorner || rightCorner
+      where
+        side = abs (x0 - x) < r + 0.5 * width && y < floorLevel + height
+        top = abs (x0 - x) < 0.5 * width && y - r < floorLevel + height
+        leftCorner = sqrt ((x0 - 0.5 * width - x)**2 + (y - floorLevel - height)**2) < r
+        rightCorner = sqrt ((x0 + 0.5 * width - x)**2 + (y - floorLevel - height)**2) < r
