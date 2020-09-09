@@ -12,6 +12,7 @@ module Schpong.Constants (
   eps,
   floorLevel,
   g,
+  minBallRadius,
   ropeSpeed,
   ropeWidth,
   stepsPerSecond,
@@ -36,6 +37,10 @@ characterSize = (10, 30)
 -- | Speed of the character on the x axis.
 characterSpeed :: Float
 characterSpeed = 2 * xspeed
+
+-- | Minimal radius of a ball.
+minBallRadius :: Float
+minBallRadius = 10
 
 -- | Speed of a ball on the x axis (= distance for one second).
 xspeed :: Float

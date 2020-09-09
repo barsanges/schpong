@@ -107,4 +107,5 @@ update dt (Playing (Frame walls balls x rope)) = case hit x' balls' of
     x' = walk dt walls x
     balls' = fmap (move dt walls) balls
     rope' = throw dt rope
-    f' = Frame walls balls' x' rope'
+    (balls'', rope'') = cut walls balls' rope'
+    f' = Frame walls balls'' x' rope''

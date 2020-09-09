@@ -12,6 +12,7 @@ module Schpong.Gameplay (
   Frame(..),
   Movement(..),
   Wall(..),
+  cut,
   initFrame,
   hit,
   move,
@@ -19,6 +20,8 @@ module Schpong.Gameplay (
   walk
   ) where
 
+import Data.Maybe (catMaybes)
+import Data.List (partition)
 import Schpong.Constants
 
 -- | A point on the x-y plane (same as 'Point' from  Gloss).
@@ -35,7 +38,7 @@ data Contact = Bottom
              | RightSide
              | LeftSide
              | None
-  deriving (Show)
+  deriving (Show, Eq)
 
 data Movement = ToLeft
               | ToRight
@@ -59,7 +62,7 @@ initFrame = Frame [bottom, right, up, left] [ball] char Nothing
     right = Wall (halfWidth - 10, -halfHeight) (halfWidth, halfHeight)
     up = Wall (-halfWidth, halfHeight - 10) (halfWidth, halfHeight)
     left = Wall (-halfWidth, -halfHeight) (-halfWidth + 10, halfHeight)
-    ball = Ball 10 (0, 0) (xspeed, 0)
+    ball = Ball 40 (0, 0) (xspeed, 0)
     char = Character 0 Still
 
 -- | Move a ball (going up and down, and boucing against walls).
@@ -158,3 +161,35 @@ throw dt (Just (x, y)) = if y' < - floorLevel
                          else Nothing
   where
     y' = y + dt * ropeSpeed
+
+-- | Cut in two the balls that meet the character's rope.
+cut :: [Wall] -> [Ball] -> Maybe Point -> ([Ball], Maybe Point)
+cut _ balls Nothing = (balls, Nothing)
+cut walls balls (Just (x, h)) = (balls', rope')
+  where
+    ropeAsWall = Wall (x - 0.5 * ropeWidth, floorLevel) (x + 0.5 * ropeWidth, floorLevel + h)
+    (contacts, others) = partition (\ b -> getContact b ropeAsWall /= None) balls
+    contacts' = splitAll walls contacts
+    balls' = contacts' ++ others
+    rope' = if null contacts
+            then Just (x, h)
+            else Nothing
+
+-- | Split all given balls and ensure that they do not get stuck in walls.
+splitAll :: [Wall] -> [Ball] -> [Ball]
+splitAll walls = flatten . catMaybes . (fmap (split walls))
+
+-- | Split a ball in two, and ensure that the resulting balls do not get stuck
+-- in walls.
+split :: [Wall] -> Ball -> Maybe (Ball, Ball)
+split walls (Ball r (x, y) _ )= if r' >= minBallRadius
+                                then Just (ballLeft, ballRight)
+                                else Nothing
+  where
+    r' = r / 2
+    ballLeft = bounce walls (Ball r' (x - r' - 5, y) (-xspeed, 0))
+    ballRight = bounce walls (Ball r' (x + r' + 5, y) (xspeed, 0))
+
+flatten :: [(a, a)] -> [a]
+flatten [] = []
+flatten ((x1, x2):xs) = (x1:x2:flatten xs)
