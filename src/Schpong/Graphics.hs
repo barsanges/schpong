@@ -55,7 +55,15 @@ drawFrame (Frame walls balls char rope) = pictures (prope:pchar:(pwalls ++ pball
 
 -- | Turn a ball into a Gloss picture.
 drawBall :: Ball -> Picture
-drawBall (Ball r (x, y) _) = translate x y (Color red (circleSolid r))
+drawBall (Ball r (x, y) _) = translate x y (Color (ballColor r) (circleSolid r))
+
+-- | Get the color of a ball, depending on its radius.
+ballColor :: Float -> Color
+ballColor r
+  | 4.5 * minBallRadius <= r = green
+  | 2.5 * minBallRadius <= r && r <= 4.5 * minBallRadius = blue
+  | 1.5 * minBallRadius <= r && r <= 2.5 * minBallRadius = red
+  | otherwise = yellow
 
 -- | Turn a wall into a Gloss picture.
 drawWall :: Wall -> Picture
