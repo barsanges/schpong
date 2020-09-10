@@ -77,10 +77,10 @@ drawCharacter (Character x _) =
 -- | Turn the rope into a Gloss picture.
 drawRope :: Maybe Point -> Picture
 drawRope Nothing = Blank
-drawRope (Just (x, h)) = translate x y (Color (greyN 0.2) (rectangleSolid ropeWidth height))
+drawRope (Just (x, top)) = translate x y (Color (greyN 0.2) (rectangleSolid ropeWidth height))
   where
-    y = (h + floorLevel) / 2
-    height = h - floorLevel
+    y = (top + floorLevel) / 2
+    height = top - floorLevel
 
 -- | Handle input events (e.g.: key press).
 handle :: Event -> GameState -> GameState

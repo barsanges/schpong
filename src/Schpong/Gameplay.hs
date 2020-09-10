@@ -165,14 +165,14 @@ throw dt (Just (x, y)) = if y' < - floorLevel
 -- | Cut in two the balls that meet the character's rope.
 cut :: [Wall] -> [Ball] -> Maybe Point -> ([Ball], Maybe Point)
 cut _ balls Nothing = (balls, Nothing)
-cut walls balls (Just (x, h)) = (balls', rope')
+cut walls balls (Just (x, y)) = (balls', rope')
   where
-    ropeAsWall = Wall (x - 0.5 * ropeWidth, floorLevel) (x + 0.5 * ropeWidth, floorLevel + h)
+    ropeAsWall = Wall (x - 0.5 * ropeWidth, floorLevel) (x + 0.5 * ropeWidth, y)
     (contacts, others) = partition (\ b -> getContact b ropeAsWall /= None) balls
     contacts' = splitAll walls contacts
     balls' = contacts' ++ others
     rope' = if null contacts
-            then Just (x, h)
+            then Just (x, y)
             else Nothing
 
 -- | Split all given balls and ensure that they do not get stuck in walls.
