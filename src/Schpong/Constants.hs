@@ -28,7 +28,7 @@ ropeWidth = 2
 
 -- | Speed of the rope on the y axis.
 ropeSpeed :: Float
-ropeSpeed = 2 * yBounceSpeed
+ropeSpeed = 4 * yBounceSpeed
 
 -- | Size of the character.
 characterSize :: (Float, Float)
