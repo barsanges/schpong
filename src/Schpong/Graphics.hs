@@ -19,6 +19,7 @@ import Schpong.Levels
 data GameState = Menu
                | Playing Frame
                | GameOver Frame
+               | Victory Frame
 
 -- | Run a game of Schpong.
 runGame :: IO ()
@@ -39,6 +40,7 @@ windowDisplay = InWindow "Schpong" (windowWidth, windowHeight) (10, 10)
 drawGameState :: GameState -> Picture
 drawGameState (Playing frame) = drawFrame frame
 drawGameState (GameOver frame) = drawGameOver $ drawFrame frame
+drawGameState (Victory frame) = drawVictory $ drawFrame frame
 drawGameState Menu = snd (mkMenu allLevels)
 
 -- | Select a level on screen.
@@ -81,6 +83,11 @@ draw2Digits str = Pictures [ translate 11.5 11.5 $ rectangleWire 38 38
 drawGameOver :: Picture -> Picture
 drawGameOver p = Pictures [ Translate (-175) 100 $ Text "Game"
                           , Translate (-125) (-100) $ Text "Over"
+                          , p ]
+
+-- | Add a "Victory!" text to a picture.
+drawVictory :: Picture -> Picture
+drawVictory p = Pictures [ Translate (-175) 0 $ Text "Victory!"
                           , p ]
 
 -- | Turn a frame into a Gloss picture.
@@ -137,6 +144,8 @@ handle (EventKey (MouseButton LeftButton) Down _ point) Menu = case selectLevel 
 handle _ Menu = Menu
 handle (EventKey (SpecialKey KeySpace) Down _ _) (GameOver _) = Menu
 handle _ (GameOver f) = GameOver f
+handle (EventKey (SpecialKey KeySpace) Down _ _) (Victory _) = Menu
+handle _ (Victory f) = Victory f
 handle (EventKey (SpecialKey KeySpace) Down _ _)  (Playing (Frame walls balls (Character x dir) _)) =
   Playing $ Frame walls balls (Character x dir) (Just (x, floorLevel))
 handle (EventKey (SpecialKey KeyLeft) Down _ _)  (Playing (Frame walls balls (Character x _) rope)) =
@@ -153,6 +162,8 @@ handle _ (Playing f) = Playing f
 update :: Float -> GameState -> GameState
 update _ Menu = Menu
 update _ (GameOver f) = GameOver f
+update _ (Victory f) = Victory f
+update dt (Playing (Frame walls [] x rope)) = Victory (Frame walls [] x rope)
 update dt (Playing (Frame walls balls x rope)) = case hit x' balls' of
   True -> GameOver f'
   False -> Playing f'
