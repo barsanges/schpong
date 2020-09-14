@@ -13,7 +13,6 @@ module Schpong.Gameplay (
   Movement(..),
   Wall(..),
   cut,
-  initFrame,
   hit,
   move,
   throw,
@@ -51,19 +50,6 @@ data Character = Character Float Movement
 -- | State of the game for a given moment.
 data Frame = Frame [Wall] [Ball] Character (Maybe Point)
   deriving (Show)
-
--- | Initial state of the game.
-initFrame :: Frame
-initFrame = Frame [bottom, right, up, left] [ball] char Nothing
-  where
-    halfWidth = 0.5 * (fromIntegral windowWidth)
-    halfHeight = 0.5 * (fromIntegral windowHeight)
-    bottom = Wall (-halfWidth, -halfHeight) (halfWidth, -halfHeight + 10)
-    right = Wall (halfWidth - 10, -halfHeight) (halfWidth, halfHeight)
-    up = Wall (-halfWidth, halfHeight - 10) (halfWidth, halfHeight)
-    left = Wall (-halfWidth, -halfHeight) (-halfWidth + 10, halfHeight)
-    ball = Ball 40 (0, 0) (xspeed, 0)
-    char = Character 0 Still
 
 -- | Move a ball (going up and down, and boucing against walls).
 move :: Float -> [Wall] -> Ball -> Ball

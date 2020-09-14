@@ -13,9 +13,11 @@ module Schpong.Graphics (
 import Graphics.Gloss.Interface.Pure.Game
 import Schpong.Constants
 import Schpong.Gameplay
+import Schpong.Levels
 
 -- | The state of the game.
-data GameState = Playing Frame
+data GameState = Menu
+               | Playing Frame
                | GameOver Frame
 
 -- | Run a game of Schpong.
@@ -24,7 +26,7 @@ runGame = play
   windowDisplay
   white
   stepsPerSecond
-  (Playing initFrame)
+  Menu
   drawGameState
   handle
   update
@@ -37,6 +39,43 @@ windowDisplay = InWindow "Schpong" (windowWidth, windowHeight) (10, 10)
 drawGameState :: GameState -> Picture
 drawGameState (Playing frame) = drawFrame frame
 drawGameState (GameOver frame) = drawGameOver $ drawFrame frame
+drawGameState Menu = snd (mkMenu allLevels)
+
+-- | Select a level on screen.
+selectLevel :: Point -> Maybe Frame
+selectLevel = fst (mkMenu allLevels)
+
+-- | Make the menu.
+mkMenu :: [Frame] -> ((Point -> Maybe Frame), Picture)
+mkMenu frame = let (fs, pics) = unzip (zipWith toMenu [0..] frame)
+               in (fstJust fs, Pictures pics)
+
+-- | Set a level in the menu.
+toMenu :: Int -> Frame -> ((Point -> Maybe Frame), Picture)
+toMenu idx frame = (go, translate x0 y0 $ draw2Digits (show (idx + 1)))
+  where
+    a = 20 -- A bit more than the half-size of the square displayed on screen.
+    ncols = 5
+    col = idx `div` ncols
+    row = idx `mod` ncols
+    x0 = -300 + 150 * (fromIntegral col)
+    y0 = 200 - 200 * (fromIntegral row)
+    go (x, y) = if abs (x - x0) < a && abs (y - y0) < a
+                then Just frame
+                else Nothing
+
+-- | Apply the functions of the list to the parameter and return the first
+-- result that is not 'Nothing'.
+fstJust :: [a -> Maybe b] -> a -> Maybe b
+fstJust [] _ = Nothing
+fstJust (f:fs) x = case f x of
+  Nothing -> fstJust fs x
+  Just y -> Just y
+
+-- | Draw the given string (two digits expected) in a square.
+draw2Digits :: String -> Picture
+draw2Digits str = Pictures [ translate 11.5 11.5 $ rectangleWire 38 38
+                           , scale 0.2 0.2 $ text str ]
 
 -- | Add a "Game over" text to a picture.
 drawGameOver :: Picture -> Picture
@@ -92,6 +131,11 @@ drawRope (Just (x, top)) = translate x y (Color (greyN 0.2) (rectangleSolid rope
 
 -- | Handle input events (e.g.: key press).
 handle :: Event -> GameState -> GameState
+handle (EventKey (MouseButton LeftButton) Down _ point) Menu = case selectLevel point of
+  Just frame -> Playing frame
+  Nothing -> Menu
+handle _ Menu = Menu
+handle (EventKey (SpecialKey KeySpace) Down _ _) (GameOver _) = Menu
 handle _ (GameOver f) = GameOver f
 handle (EventKey (SpecialKey KeySpace) Down _ _)  (Playing (Frame walls balls (Character x dir) _)) =
   Playing $ Frame walls balls (Character x dir) (Just (x, floorLevel))
@@ -107,6 +151,7 @@ handle _ (Playing f) = Playing f
 
 -- | Update a frame.
 update :: Float -> GameState -> GameState
+update _ Menu = Menu
 update _ (GameOver f) = GameOver f
 update dt (Playing (Frame walls balls x rope)) = case hit x' balls' of
   True -> GameOver f'
