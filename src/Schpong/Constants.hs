@@ -32,11 +32,11 @@ ropeSpeed = 4 * yBounceSpeed
 
 -- | Size of the character.
 characterSize :: (Float, Float)
-characterSize = (10, 30)
+characterSize = (30, 50)
 
 -- | Speed of the character on the x axis.
 characterSpeed :: Float
-characterSpeed = 2 * xspeed
+characterSpeed = 2.5 * xspeed
 
 -- | Minimal radius of a ball.
 minBallRadius :: Float
@@ -44,12 +44,12 @@ minBallRadius = 10
 
 -- | Speed of a ball on the x axis (= distance for one second).
 xspeed :: Float
-xspeed = 80
+xspeed = 120
 
 -- | Minimal speed of a ball on the y axis (= distance for one second) after
 -- bouncing on the floor.
 yBounceSpeed :: Float
-yBounceSpeed = 100
+yBounceSpeed = 200
 
 -- | Gravitational constant.
 g :: Float
