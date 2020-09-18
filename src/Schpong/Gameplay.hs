@@ -140,13 +140,19 @@ hit (Character x0 _) = any go
         rightCorner = sqrt ((x0 + 0.5 * width - x)**2 + (y - floorLevel - height)**2) < r
 
 -- | Throw the character's rope in the air.
-throw :: Float -> Maybe Point -> Maybe Point
-throw _ Nothing = Nothing
-throw dt (Just (x, y)) = if y' < - floorLevel
-                         then Just (x, y')
-                         else Nothing
+throw :: Float -> [Wall] -> Maybe Point -> Maybe Point
+throw _ _ Nothing = Nothing
+throw dt walls (Just (x, y)) = if y' < - floorLevel
+                               then Just (x, y')
+                               else Nothing
   where
-    y' = y + dt * ropeSpeed
+    y' = foldr go (y + dt * ropeSpeed) walls
+    go :: Wall -> Float -> Float
+    go (Wall (x0, y0) (x1, y1)) u = if x0 < x + 0.5 * ropeWidth && x1 > x - 0.5 * ropeWidth
+                                    then if y0 < u && y0 > floorLevel
+                                         then -floorLevel
+                                         else u
+                                    else u
 
 -- | Cut in two the balls that meet the character's rope.
 cut :: [Wall] -> [Ball] -> Maybe Point -> ([Ball], Maybe Point)
