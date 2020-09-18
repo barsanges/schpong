@@ -58,8 +58,8 @@ toMenu idx frame = (go, translate x0 y0 $ draw2Digits (show (idx + 1)))
   where
     a = 20 -- A bit more than the half-size of the square displayed on screen.
     ncols = 5
-    col = idx `div` ncols
-    row = idx `mod` ncols
+    row = idx `div` ncols
+    col = idx `mod` ncols
     x0 = -300 + 150 * (fromIntegral col)
     y0 = 200 - 200 * (fromIntegral row)
     go (x, y) = if abs (x - x0) < a && abs (y - y0) < a
